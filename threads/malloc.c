@@ -161,13 +161,14 @@ malloc with next fit
 Modify - JongHyun 
 */
 void *
-malloc (size_t size) 
+malloc_next (size_t size) 
 {
   struct desc *d;
   struct block *b;
   struct arena *a;
 
-  /* A null pointer satisfies a request for 0 bytes. */
+  /* A null pointer satisfies a r
+  equest for 0 bytes. */
   if (size == 0)
     return NULL;
 
@@ -231,7 +232,7 @@ malloc (size_t size)
 /* Obtains and returns a new block of at least SIZE bytes.
    Returns a null pointer if memory is not available. */
 void *
-malloc_origin (size_t size) 
+malloc (size_t size) 
 {
   struct desc *d;
   struct block *b;
