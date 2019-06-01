@@ -60,6 +60,81 @@ palloc_init (size_t user_page_limit)
   init_pool (&user_pool, free_start + kernel_pages * PGSIZE,
              user_pages, "user pool");
 }
+/* palloc_get_multiple - buddy version 
+  Modify - JongHyun
+*/
+void*
+palloc_get_buddy (enum palloc_flags flags, size_t page_cnt)
+{
+  //boundary setting
+  struct pool *pool = flags & PAL_USER ? &user_pool : &kernel_pool;
+  void *pages;
+  size_t page_idx;
+
+  //page count 0 - return
+  if (page_cnt == 0)
+    return NULL;
+
+  //lock
+  lock_acquire (&pool->lock);
+  //get index (we need to get size both)
+  page_idx = bitmap_scan_buddy_and_setting (pool->used_map, 0, page_cnt, false);
+
+  //page_idx = bitmap_scan_and_flip (pool->used_map, 0, page_cnt, false);
+  lock_release (&pool->lock);
+
+  //pages : start index of pages
+  if (page_idx != BITMAP_ERROR)
+    pages = pool->base + PGSIZE * page_idx;
+  else
+    pages = NULL;
+
+  if (pages != NULL) 
+    {
+      if (flags & PAL_ZERO)
+        memset (pages, 0, PGSIZE * page_cnt);
+    }
+  else 
+    {
+      if (flags & PAL_ASSERT)
+        PANIC ("palloc_get: out of pages");
+    }
+
+  return pages;
+}
+
+void *
+palloc_get_multiple_next (enum palloc_flags flags, size_t page_cnt)
+{
+  struct pool *pool = flags & PAL_USER ? &user_pool : &kernel_pool;
+  void *pages;
+  size_t page_idx;
+
+  if (page_cnt == 0)
+    return NULL;
+
+  lock_acquire (&pool->lock);
+  page_idx = bitmap_scan_next_and_flip (pool->used_map, 0, page_cnt, false);
+  lock_release (&pool->lock);
+
+  if (page_idx != BITMAP_ERROR)
+    pages = pool->base + PGSIZE * page_idx;
+  else
+    pages = NULL;
+
+  if (pages != NULL) 
+    {
+      if (flags & PAL_ZERO)
+        memset (pages, 0, PGSIZE * page_cnt);
+    }
+  else 
+    {
+      if (flags & PAL_ASSERT)
+        PANIC ("palloc_get: out of pages");
+    }
+
+  return pages;
+}
 
 /* Obtains and returns a group of PAGE_CNT contiguous free pages.
    If PAL_USER is set, the pages are obtained from the user pool,

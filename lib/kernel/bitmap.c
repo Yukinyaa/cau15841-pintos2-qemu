@@ -309,6 +309,48 @@ bitmap_scan (const struct bitmap *b, size_t start, size_t cnt, bool value)
   return BITMAP_ERROR;
 }
 
+size_t start_idx = 0;
+
+size_t
+bitmap_scan_next (const struct bitmap *b, size_t start, size_t cnt, bool value) 
+{
+  ASSERT (b != NULL);
+  ASSERT (start <= b->bit_cnt);
+
+  if (cnt <= b->bit_cnt) 
+    {
+      size_t last = b->bit_cnt - cnt;
+      size_t i;
+      for (i = start_idx; i <= last; i++)
+        if (!bitmap_contains (b, i, cnt, !value))
+          return i; 
+      for (i = 0;i<=start_idx-1;i++)
+        if (!bitmap_contains (b, i, cnt, !value))
+            return i;     
+    }
+  return BITMAP_ERROR;
+}
+
+
+/* scan with buddy system
+ Modify - JongHyun */
+size_t
+bitmap_buddy_scan (const struct bitmap *b, size_t start, size_t cnt, bool value) 
+{
+  ASSERT (b != NULL);
+  ASSERT (start <= b->bit_cnt);
+
+  if (cnt <= b->bit_cnt) 
+    {
+      size_t last = b->bit_cnt - cnt;
+      size_t i;
+      for (i = start; i <= last; i+=cnt)
+        if (!bitmap_contains (b, i, cnt, !value))
+          return i; 
+    }
+  return BITMAP_ERROR;
+}
+
 /* Finds the first group of CNT consecutive bits in B at or after
    START that are all set to VALUE, flips them all to !VALUE,
    and returns the index of the first bit in the group.
@@ -325,6 +367,36 @@ bitmap_scan_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value)
   return idx;
 }
 
+/* Upscailing size and first fit
+ Modify - JongHyun */
+size_t
+bitmap_scan_buddy_and_setting (struct bitmap *b, size_t start, size_t cnt, bool value)
+{
+  //expand cnt to square
+  int square = 1;
+  while(cnt > square){
+    square *= 2;
+  }
+  cnt = square;
+
+  size_t idx = bitmap_buddy_scan (b, start, cnt, value);
+
+  if (idx != BITMAP_ERROR) 
+    bitmap_set_multiple (b, idx, cnt, !value);
+  return idx;
+}
+
+size_t
+bitmap_scan_next_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value)
+{
+  size_t idx = bitmap_scan_next (b, start, cnt, value);
+  if (idx != BITMAP_ERROR) 
+    bitmap_set_multiple (b, idx, cnt, !value);
+  return idx;
+}
+
+
+
 /* File input and output. */
 
 #ifdef FILESYS

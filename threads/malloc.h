@@ -5,6 +5,8 @@
 #include <stddef.h>
 
 void malloc_init (void);
+void *malloc_buddy (size_t ); __attribute__ ((malloc_buddy));
+void *malloc_next (size_t) __attribute__ ((malloc_next));
 void *malloc (size_t) __attribute__ ((malloc));
 void *calloc (size_t, size_t) __attribute__ ((malloc));
 void *realloc (void *, size_t);
