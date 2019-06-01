@@ -324,7 +324,38 @@ bitmap_scan_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value)
     bitmap_set_multiple (b, idx, cnt, !value);
   return idx;
 }
-
+/* Finds first group of CNT consecutive bits in B at or after
+   
+*/
+size_t
+bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool value)
+{
+  size_t best = BITMAP_ERROR;
+  size_t bestChunkSizeDelta = 0xffffffff;
+  while(true)
+  {
+    size_t sidx = bitmap_scan (b, start, cnt, value);//Scan for fit.
+    if(sidx == BITMAP_ERROR)
+      break;
+    size_t eidx = bitmap_scan (b, sidx, 1, !value);
+
+    size_t chunkSize = sidx - eidx;
+
+    if(bestChunkSizeDelta < chunkSize - cnt)
+    {
+      bestChunkSizeDelta = chunkSize - cnt;
+      best = sidx;
+    }
+      
+    start += chunkSize;
+  }
+  
+  if (best != BITMAP_ERROR) 
+    bitmap_set_multiple (b, best, cnt, !value);
+  return best;
+}
+
+
 /* File input and output. */
 
 #ifdef FILESYS
