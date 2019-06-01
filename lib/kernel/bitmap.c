@@ -324,8 +324,7 @@ bitmap_scan_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value)
     bitmap_set_multiple (b, idx, cnt, !value);
   return idx;
 }
-/* Finds first group of CNT consecutive bits in B at or after
-   
+/* Finds group of at least CNT consecutive bits in B, which is in smallest size.
 */
 size_t
 bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool value)
@@ -347,7 +346,7 @@ bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool va
       best = sidx;
     }
       
-    start += chunkSize;//iterate to next.
+    start += chunkSize;//iterate to next chunk set.
   }
   
   if (best != BITMAP_ERROR) 
