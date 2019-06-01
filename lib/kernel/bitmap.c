@@ -332,22 +332,22 @@ bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool va
 {
   size_t best = BITMAP_ERROR;
   size_t bestChunkSizeDelta = 0xffffffff;
-  while(true)
+  while(true)//find smallest fit
   {
-    size_t sidx = bitmap_scan (b, start, cnt, value);//Scan for fit.
+    size_t sidx = bitmap_scan (b, start, cnt, value);//Scan for any fit.
     if(sidx == BITMAP_ERROR)
       break;
-    size_t eidx = bitmap_scan (b, sidx, 1, !value);
+    size_t eidx = bitmap_scan (b, sidx, 1, !value);//Scan for serched fit's size
 
-    size_t chunkSize = sidx - eidx;
+    size_t chunkSize = sidx - eidx;//Chunk size discovered
 
-    if(bestChunkSizeDelta < chunkSize - cnt)
+    if(bestChunkSizeDelta > chunkSize - cnt)//find smallest fit.
     {
       bestChunkSizeDelta = chunkSize - cnt;
       best = sidx;
     }
       
-    start += chunkSize;
+    start += chunkSize;//iterate to next.
   }
   
   if (best != BITMAP_ERROR) 
