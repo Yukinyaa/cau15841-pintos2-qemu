@@ -11,6 +11,11 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 
+#define PALLOC_POLICY_FIRSTFIT 1
+#define PALLOC_POLICY_BESTFIT 2
+
+#define PALLOC_POLICY PALLOC_POLICY_FIRSTFIT
+
 /* Page allocator.  Hands out memory in page-size (or
    page-multiple) chunks.  See malloc.h for an allocator that
    hands out smaller chunks.
@@ -152,9 +157,20 @@ palloc_get_multiple (enum palloc_flags flags, size_t page_cnt)
   if (page_cnt == 0)
     return NULL;
 
+  #if PALLOC_POLICY == PALLOC_POLICY_FIRSTFIT
+
   lock_acquire (&pool->lock);
   page_idx = bitmap_scan_and_flip (pool->used_map, 0, page_cnt, false);
   lock_release (&pool->lock);
+
+  #elif PALLOC_POLICY == PALLOC_POLICY_BESTFIT
+
+  lock_acquire (&pool->lock);
+  page_idx = bitmap_scan_and_flip_bestfit (pool->used_map, 0, page_cnt, false);
+  lock_release (&pool->lock);
+
+  #endif
+
 
   if (page_idx != BITMAP_ERROR)
     pages = pool->base + PGSIZE * page_idx;

@@ -366,6 +366,7 @@ bitmap_scan_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value)
     bitmap_set_multiple (b, idx, cnt, !value);
   return idx;
 }
+<<<<<<< HEAD
 
 /* Upscailing size and first fit
  Modify - JongHyun */
@@ -397,6 +398,39 @@ bitmap_scan_next_and_flip (struct bitmap *b, size_t start, size_t cnt, bool valu
 
 
 
+=======
+/* Finds group of at least CNT consecutive bits in B, which is in smallest size.
+*/
+size_t
+bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool value)
+{
+  size_t best = BITMAP_ERROR;
+  size_t bestChunkSizeDelta = 0xffffffff;
+  while(true)//find smallest fit
+  {
+    size_t sidx = bitmap_scan (b, start, cnt, value);//Scan for any fit.
+    if(sidx == BITMAP_ERROR)
+      break;
+    size_t eidx = bitmap_scan (b, sidx, 1, !value);//Scan for serched fit's size
+
+    size_t chunkSize = sidx - eidx;//Chunk size discovered
+
+    if(bestChunkSizeDelta > chunkSize - cnt)//find smallest fit.
+    {
+      bestChunkSizeDelta = chunkSize - cnt;
+      best = sidx;
+    }
+      
+    start += chunkSize;//iterate to next chunk set.
+  }
+  
+  if (best != BITMAP_ERROR) 
+    bitmap_set_multiple (b, best, cnt, !value);
+  return best;
+}
+
+
+>>>>>>> 7772b6be368ef0d65788accd167a0cec69811a33
 /* File input and output. */
 
 #ifdef FILESYS
