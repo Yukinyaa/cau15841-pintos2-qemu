@@ -318,6 +318,7 @@ bitmap_scan_next (const struct bitmap *b, size_t start, size_t cnt, bool value)
   ASSERT (start <= b->bit_cnt);
 
   if (cnt <= b->bit_cnt) 
+<<<<<<< HEAD
     {
       size_t last = b->bit_cnt - cnt;
       size_t i;
@@ -332,6 +333,23 @@ bitmap_scan_next (const struct bitmap *b, size_t start, size_t cnt, bool value)
             return i;     
         }
     }
+=======
+  {
+    size_t last = b->bit_cnt - cnt;
+    size_t i;
+    for (i = start_idx; i <= last; i++)
+      if (!bitmap_contains (b, i, cnt, !value)){
+        start_idx = i; //added
+        return i; 
+      }
+    for (i = 0;i<=start_idx-1;i++)
+      if (!bitmap_contains (b, i, cnt, !value)){
+          start_idx = i; //added
+          return i;     
+      }    
+  }
+            
+>>>>>>> origin/palloctest
   return BITMAP_ERROR;
 }
 
@@ -410,6 +428,8 @@ bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool va
   size_t bestChunkSizeDelta = 0xffffffff;
   while(true)//find smallest fit
   {
+    if(start >= b->bit_cnt)
+      break;
     size_t sidx = bitmap_scan (b, start, cnt, value);//Scan for any fit.
     if(sidx == BITMAP_ERROR)
       break;
