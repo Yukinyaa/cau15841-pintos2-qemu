@@ -406,6 +406,8 @@ bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool va
   size_t bestChunkSizeDelta = 0xffffffff;
   while(true)//find smallest fit
   {
+    if(start >= b->bit_cnt)
+      break;
     size_t sidx = bitmap_scan (b, start, cnt, value);//Scan for any fit.
     if(sidx == BITMAP_ERROR)
       break;

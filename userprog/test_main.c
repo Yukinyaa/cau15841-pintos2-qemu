@@ -10,19 +10,23 @@
 void
 palloc_test_main (void) 
 {
-  int elapsedtmp = 0;
+  int testResult = 0;
   int i;
   //test_name = argv[0];
 
   printf ("begin testing\n");
   printf("\n");
-  printf ("begin testing with seed 1~1000\n");
+  printf ("begin testing speed with seed 1~100\n");
   
   for( i =0;i<100;i++)
-    elapsedtmp +=  testpalloc_add100_remove50_add50_remove100(1);//seeded test, to should have stable outcome
-  printf ("ended test, elapsed time : %d.%04d seconds\n\n", elapsedtmp/1000, elapsedtmp%1000);
-
-  test_fragmentation(1);
+      testResult +=  testpalloc_add100_remove50_add50_remove100(1);//seeded test, to should have stable outcome
+  printf ("ended speed test, elapsed time : %d.%04d seconds\n\n", testResult/1000, testResult%1000);
+  
+  printf("\n");
+  printf ("begin testing fragmentation with seed 1~100\n");
+  for( i =0;i<100;i++)
+    testResult += test_fragmentation(i);
+  printf ("ended fragmentation test, avg.score : %d.%02d\n\n", testResult/100, testResult%100);
 
   shutdown_power_off();
   return 0;
@@ -82,7 +86,7 @@ int test_fragmentation(int seed)
   int *segSize = malloc(init_ram_pages*sizeof(int));
   int segcnt, i, idx, addedCnt;
 
-  printf("fragmentation bench started, (seed: %d)\n", seed);
+  printf("fragmentation bench started, (seed: %d), tot.page = %d\n", seed, init_ram_pages);
 
   start_time = timer_ticks();
   for( segcnt =0; 1 ;segcnt++)//add i random
@@ -91,7 +95,6 @@ int test_fragmentation(int seed)
     if(segments[segcnt] == NULL ) break;
   }
   segcnt++;
-  printf("p1\n");
   for(i=0 ; i<segcnt ; i++)
   {
     if(i%10 == 0)
@@ -99,7 +102,6 @@ int test_fragmentation(int seed)
     palloc_free_multiple(segments[i],segSize[i]);
   }
   addedCnt=0;
-  printf("p2\n");
   for(idx=0 ;  ; idx++)
   {
     if(idx<segcnt && idx%10 ==0 )

@@ -11,13 +11,14 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 
+#ifndef PALLOC_POLICY
 #define PALLOC_POLICY_FIRSTFIT 1
 #define PALLOC_POLICY_BESTFIT 2
 #define PALLOC_POLICY_NEXTFIT 3
 #define PALLOC_POLICY_BUDDY_SYSTEM 4
 
-#define PALLOC_POLICY 2
-
+#define PALLOC_POLICY 4
+#endif
 /* Page allocator.  Hands out memory in page-size (or
    page-multiple) chunks.  See malloc.h for an allocator that
    hands out smaller chunks.
