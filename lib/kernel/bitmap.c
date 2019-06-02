@@ -322,11 +322,15 @@ bitmap_scan_next (const struct bitmap *b, size_t start, size_t cnt, bool value)
       size_t last = b->bit_cnt - cnt;
       size_t i;
       for (i = start_idx; i <= last; i++)
-        if (!bitmap_contains (b, i, cnt, !value))
+        if (!bitmap_contains (b, i, cnt, !value)){
+          start_idx = i;
           return i; 
+        }
       for (i = 0;i<=start_idx-1;i++)
-        if (!bitmap_contains (b, i, cnt, !value))
+        if (!bitmap_contains (b, i, cnt, !value)){
+            start_idx = i;
             return i;     
+        }
     }
   return BITMAP_ERROR;
 }
