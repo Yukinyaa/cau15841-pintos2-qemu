@@ -16,7 +16,7 @@
 #define PALLOC_POLICY_NEXTFIT 3
 #define PALLOC_POLICY_BUDDY_SYSTEM 4
 
-#define PALLOC_POLICY PALLOC_POLICY_BUDDY_SYSTEM
+#define PALLOC_POLICY 2
 
 /* Page allocator.  Hands out memory in page-size (or
    page-multiple) chunks.  See malloc.h for an allocator that
