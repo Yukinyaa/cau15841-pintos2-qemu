@@ -309,26 +309,29 @@ bitmap_scan (const struct bitmap *b, size_t start, size_t cnt, bool value)
   return BITMAP_ERROR;
 }
 
-size_t start_idx = 0;
-
 size_t
-bitmap_scan_next (const struct bitmap *b, size_t start, size_t cnt, bool value) 
+bitmap_scan_next (const struct bitmap *b, size_t *start_idx, size_t cnt, bool value) 
 {
   ASSERT (b != NULL);
-  ASSERT (start <= b->bit_cnt);
-
+ASSERT (start <= b->bit_cnt); 
   if (cnt <= b->bit_cnt) 
     {
       size_t last = b->bit_cnt - cnt;
       size_t i;
-      for (i = start_idx; i <= last; i++)
+      for (i = *start_idx; i <= last; i++)
         if (!bitmap_contains (b, i, cnt, !value)){
-          start_idx = i;
+          *start_idx = i + cnt;
+          if(*start_idx <= b->bit_cnt){
+            *start_idx = 0;
+          }
           return i; 
         }
-      for (i = 0;i<=start_idx-1;i++)
+      for (i = 0;i<=*start_idx-1;i++)
         if (!bitmap_contains (b, i, cnt, !value)){
-            start_idx = i;
+            *start_idx = i + cnt;
+          if(*start_idx <= b->bit_cnt){
+            *start_idx = 0;
+          }
             return i;     
         }
     }
@@ -348,7 +351,7 @@ bitmap_buddy_scan (const struct bitmap *b, size_t start, size_t cnt, bool value)
     {
       size_t last = b->bit_cnt - cnt;
       size_t i;
-      for (i = start; i <= last; i+=cnt)
+      for (i = 0; i <= last; i+=cnt)
         if (!bitmap_contains (b, i, cnt, !value))
           return i; 
     }
@@ -377,7 +380,7 @@ size_t
 bitmap_scan_buddy_and_setting (struct bitmap *b, size_t start, size_t cnt, bool value)
 {
   //expand cnt to square
-  int square = 1;
+  size_t square = 1;
   while(cnt > square){
     square *= 2;
   }
@@ -389,6 +392,8 @@ bitmap_scan_buddy_and_setting (struct bitmap *b, size_t start, size_t cnt, bool 
     bitmap_set_multiple (b, idx, cnt, !value);
   return idx;
 }
+
+size_t *start_idx
 
 size_t
 bitmap_scan_next_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value)
@@ -424,6 +429,9 @@ bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool va
     }
       
     start += chunkSize;//iterate to next chunk set.
+    if (start <= b->bit_cnt){
+      return BITMAP_ERROR;
+    }
   }
   
   if (best != BITMAP_ERROR) 
