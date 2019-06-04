@@ -346,15 +346,13 @@ bitmap_buddy_scan (const struct bitmap *b, size_t start, size_t cnt, bool value)
 {
   ASSERT (b != NULL);
   ASSERT (start <= b->bit_cnt);
+  ASSERT (cnt <= b->bit_cnt);
 
-  if (cnt <= b->bit_cnt) 
-    {
-      size_t last = b->bit_cnt - cnt;
-      size_t i;
-      for (i = 0; i <= last; i+=cnt)
-        if (!bitmap_contains (b, i, cnt, !value))
-          return i; 
-    }
+  size_t last = b->bit_cnt - cnt;
+  size_t i;
+  for (i = start; i < last; i += cnt)
+    if (!bitmap_contains (b, i, cnt, !value))
+      return i; 
   return BITMAP_ERROR;
 }
 
@@ -407,6 +405,9 @@ bitmap_scan_next_and_flip (struct bitmap *b, size_t start, size_t cnt, bool valu
 
 /* Finds group of at least CNT consecutive bits in B, which is in smallest size.
 */
+
+/* Finds group of at least CNT consecutive bits in B, which is in smallest size.
+*/
 size_t
 bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool value)
 {
@@ -414,6 +415,8 @@ bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool va
   size_t bestChunkSizeDelta = 0xffffffff;
   while(true)//find smallest fit
   {
+    if(start >= b->bit_cnt)
+      break;
     size_t sidx = bitmap_scan (b, start, cnt, value);//Scan for any fit.
     if(sidx == BITMAP_ERROR)
       break;
@@ -428,9 +431,6 @@ bitmap_scan_and_flip_bestfit(struct bitmap *b, size_t start, size_t cnt, bool va
     }
       
     start += chunkSize;//iterate to next chunk set.
-    if (start <= b->bit_cnt){
-      return BITMAP_ERROR;
-    }
   }
   
   if (best != BITMAP_ERROR) 

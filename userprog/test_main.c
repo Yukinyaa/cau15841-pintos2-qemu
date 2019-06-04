@@ -7,6 +7,9 @@
 
 #include "threads/loader.h"
 
+int testpalloc_add100_remove50_add50_remove100(int seed);
+int test_fragmentation(int seed);
+
 void
 palloc_test_main (void) 
 {
@@ -19,7 +22,7 @@ palloc_test_main (void)
   printf ("begin testing speed with seed 1~100\n");
   
   for( i =0;i<100;i++)
-      testResult +=  testpalloc_add100_remove50_add50_remove100(1);//seeded test, to should have stable outcome
+      testResult +=  testpalloc_add10_remove5_add5_remove10(1);//seeded test, to should have stable outcome
   printf ("ended speed test, elapsed time : %d.%04d seconds\n\n", testResult/1000, testResult%1000);
   
   printf("\n");
@@ -33,34 +36,38 @@ palloc_test_main (void)
 
 }
 
-int testpalloc_add100_remove50_add50_remove100(int seed)
+int testpalloc_add10_remove5_add5_remove10(int seed)
 {
   int start_time = timer_ticks();
   int elapsed_time;
   void* segments[100];
   int segSize[100];
-  int i;
+  int i,loop;
 
   random_init (seed);
 
+  for(loop = 0;loop<10;loop++)
+  {
+    for( i =0;i<10;i++)//add 10 random
+      segments[i] = palloc_get_multiple(PAL_USER,segSize[i] = random_ulong()%16+1);//get 1~16 random pagecd
 
-  for( i =0;i<100;i++)//add 100 random
-    segments[i] = palloc_get_multiple(PAL_USER,segSize[i] = random_ulong()%16+1);//get 1~16 random pagecd
+    for(i = 0;i<10;i+=2)//remove 
+      palloc_free_multiple(segments[i],segSize[i]);
 
-  for(i = 0;i<100;i+=2)//remove 
-    palloc_free_multiple(segments[i],segSize[i]);
+    for(i = 0;i<10;i+=2)//add 5, random
+      segments[i] = palloc_get_multiple(PAL_USER,segSize[i] = random_ulong()%16+1);//get 1~16 random page
 
-  for(i = 0;i<100;i+=2)//add 50, random
-    segments[i] = palloc_get_multiple(PAL_USER,segSize[i] = random_ulong()%16+1);//get 1~16 random page
+    elapsed_time = timer_ticks() - start_time;//save timer status.
 
-  elapsed_time = timer_ticks() - start_time;//save timer status.
+    for(i = 0;i<10;i++)
+      palloc_free_multiple(segments[i],segSize[i]);
+  }
+    
 
   //todo: check segmentation here
   
 
 
-  for(i = 0;i<100;i++)
-    palloc_free_multiple(segments[i],segSize[i]);
 
   
 
@@ -91,7 +98,7 @@ int test_fragmentation(int seed)
   start_time = timer_ticks();
   for( segcnt =0; 1 ;segcnt++)//add i random
   {
-    segments[segcnt] = palloc_get_multiple(PAL_USER,segSize[segcnt] = random_ulong()%16+1);//get 1~16 random pagecd
+    segments[segcnt] = palloc_get_multiple(PAL_USER,segSize[segcnt] = random_ulong()%8+1);//get 1~8 random pagecd
     if(segments[segcnt] == NULL ) break;
   }
   segcnt++;
@@ -107,13 +114,12 @@ int test_fragmentation(int seed)
     if(idx<segcnt && idx%10 ==0 )
       continue;
 
-    segments[idx] = palloc_get_multiple(PAL_USER,segSize[idx] = random_ulong()%16+1);//get 1~16 random pagecd
+    segments[idx] = palloc_get_multiple(PAL_USER,segSize[idx] = random_ulong()%8+1);//get 1~8 random pagecd
     if(segments[idx] == NULL ) break;
     addedCnt++;
     if(i%10 == 0)
       continue;
   }
-  printf("p3\n");
   elapsed_time = timer_ticks() - start_time;//save timer status.
 
   for(i=0;;i++)
