@@ -36,11 +36,14 @@ bool bitmap_all (const struct bitmap *, size_t start, size_t cnt);
 #define BITMAP_ERROR SIZE_MAX
 size_t bitmap_scan (const struct bitmap *, size_t start, size_t cnt, bool);
 size_t bitmap_scan_and_flip (struct bitmap *, size_t start, size_t cnt, bool);
+size_t bitmap_scan_next (const struct bitmap *b, size_t start, size_t cnt, bool value) ;
 /* Add by JongHyun */
 size_t bitmap_scan_budd_and_setting (struct bitmap *b, size_t start, size_t cnt, bool value);
 size_t bitmap_find_buddy (struct bitmap *, size_t start, size_t *cnt, bool);
 size_t bitmap_scan_next_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value);
 size_t bitmap_scan_and_flip_bestfit (struct bitmap *, size_t start, size_t cnt, bool);
+
+
 
 /* File input and output. */
 #ifdef FILESYS

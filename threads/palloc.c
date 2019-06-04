@@ -17,7 +17,7 @@
 #define PALLOC_POLICY_NEXTFIT 3
 #define PALLOC_POLICY_BUDDY_SYSTEM 4
 
-#define PALLOC_POLICY 3
+#define PALLOC_POLICY 4
 #endif
 /* Page allocator.  Hands out memory in page-size (or
    page-multiple) chunks.  See malloc.h for an allocator that
@@ -76,7 +76,6 @@ palloc_init (size_t user_page_limit)
    available, returns a null pointer, unless PAL_ASSERT is set in
    FLAGS, in which case the kernel panics. */
 
-size_t *start_idx=0;   
 void *
 palloc_get_multiple (enum palloc_flags flags, size_t page_cnt)
 {
@@ -88,21 +87,18 @@ palloc_get_multiple (enum palloc_flags flags, size_t page_cnt)
     return NULL;
 
   #if PALLOC_POLICY == PALLOC_POLICY_FIRSTFIT
-  printf("first\n");
   lock_acquire (&pool->lock);
   page_idx = bitmap_scan_and_flip (pool->used_map, 0, page_cnt, false);
   lock_release (&pool->lock);
 
   #elif PALLOC_POLICY == PALLOC_POLICY_BESTFIT
-  printf("best\n");
   lock_acquire (&pool->lock);
   page_idx = bitmap_scan_and_flip_bestfit (pool->used_map, 0, page_cnt, false);
   lock_release (&pool->lock);
 
   #elif PALLOC_POLICY == PALLOC_POLICY_NEXTFIT
-  printf("next\n");
   lock_acquire (&pool->lock);
-  page_idx = bitmap_scan_next_and_flip (pool->used_map, start_idx, page_cnt, false);
+  page_idx = bitmap_scan_next_and_flip (pool->used_map, 0, page_cnt, false);
   lock_release (&pool->lock);
 
   #elif PALLOC_POLICY == PALLOC_POLICY_BUDDY_SYSTEM

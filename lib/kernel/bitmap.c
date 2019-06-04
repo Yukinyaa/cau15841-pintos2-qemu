@@ -309,31 +309,31 @@ bitmap_scan (const struct bitmap *b, size_t start, size_t cnt, bool value)
   return BITMAP_ERROR;
 }
 
+
+size_t next_index = 0;
 size_t
-bitmap_scan_next (const struct bitmap *b, size_t *start_idx, size_t cnt, bool value) 
+bitmap_scan_next (const struct bitmap *b, size_t start, size_t cnt, bool value) 
 {
   ASSERT (b != NULL);
-ASSERT (start <= b->bit_cnt); 
+  ASSERT (start <= b->bit_cnt);
+  
+
   if (cnt <= b->bit_cnt) 
     {
       size_t last = b->bit_cnt - cnt;
       size_t i;
-      for (i = *start_idx; i <= last; i++)
+      if(next_index >= last)
+        next_index = last;
+      for (i = next_index; i <= last; i++)
         if (!bitmap_contains (b, i, cnt, !value)){
-          *start_idx = i + cnt;
-          if(*start_idx <= b->bit_cnt){
-            *start_idx = 0;
-          }
+          next_index = i;
           return i; 
-        }
-      for (i = 0;i<=*start_idx-1;i++)
+        } 
+      for (i = start; i <= next_index; i++)
         if (!bitmap_contains (b, i, cnt, !value)){
-            *start_idx = i + cnt;
-          if(*start_idx <= b->bit_cnt){
-            *start_idx = 0;
-          }
-            return i;     
-        }
+          next_index = i;
+          return i; 
+        } 
     }
   return BITMAP_ERROR;
 }
@@ -393,7 +393,6 @@ bitmap_scan_buddy_and_setting (struct bitmap *b, size_t start, size_t cnt, bool 
   return idx;
 }
 
-size_t *start_idx
 
 size_t
 bitmap_scan_next_and_flip (struct bitmap *b, size_t start, size_t cnt, bool value)
