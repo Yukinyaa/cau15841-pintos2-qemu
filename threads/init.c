@@ -22,12 +22,16 @@
 #include "threads/palloc.h"
 #include "threads/pte.h"
 #include "threads/thread.h"
+
+#include "userprog/test_main.h"
+
 #ifdef USERPROG
 #include "userprog/process.h"
 #include "userprog/exception.h"
 #include "userprog/gdt.h"
 #include "userprog/syscall.h"
 #include "userprog/tss.h"
+#include "vm/frame.h"
 #else
 #include "tests/threads/tests.h"
 #endif
@@ -125,6 +129,10 @@ main (void)
   ide_init ();
   locate_block_devices ();
   filesys_init (format_filesys);
+#endif
+
+#ifdef USERPROG
+  frame_init();
 #endif
 
   printf ("Boot complete.\n");
@@ -292,6 +300,13 @@ run_task (char **argv)
   printf ("Execution of '%s' complete.\n", task);
 }
 
+static void
+run_palloctest (char **argv) 
+{
+  palloc_test_main();
+}
+
+
 /* Executes all of the actions specified in ARGV[]
    up to the null pointer sentinel. */
 static void
@@ -309,6 +324,7 @@ run_actions (char **argv)
   static const struct action actions[] = 
     {
       {"run", 2, run_task},
+		  {"palloctest", 0, run_palloctest},
 #ifdef FILESYS
       {"ls", 1, fsutil_ls},
       {"cat", 2, fsutil_cat},

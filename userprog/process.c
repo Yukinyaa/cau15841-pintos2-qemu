@@ -17,6 +17,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "vm/frame.h"
 
 /* Parameters for user program execution
    len: the length of a program command line 
@@ -96,6 +97,10 @@ start_process (void *_params)
     thread_exit ();
   }
 
+  /* Frame allocate */
+  struct hash frametable = frame_get_frame();
+  printf("\nhash size: %d\n", hash_size(&frametable));
+
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -151,9 +156,11 @@ process_exit (void)
          directory before destroying the process's page
          directory, or our active page directory will be one
          that's been freed (and cleared). */
+      frame_lock_frametable();
       cur->pagedir = NULL;
       pagedir_activate (NULL);
       pagedir_destroy (pd);
+      frame_unlock_frametable();
     }
 }
 
@@ -486,6 +493,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
           return false; 
         }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
+      frame_addframe(upage, kpage);  /** added */
 
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
@@ -634,8 +642,13 @@ setup_stack (struct uprg_params *params, void **esp)
         printf("0x%8X: points to ret, 0x%X\n", (uint32_t) *esp, *((uint32_t *) *esp));
 #endif 
       }
-      else
-        palloc_free_page (kpage);
+      else  /** added */
+      {
+        frame_lock_frametable();
+        frame_free(kpage);
+        frame_unlock_frametable();
+        //palloc_free_page (kpage);
+      }
     }
   return success;
 }
