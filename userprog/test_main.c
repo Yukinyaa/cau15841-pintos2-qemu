@@ -39,7 +39,6 @@ palloc_test_main (void)
 int testpalloc_add10_remove5_add5_remove10(int seed)
 {
   int start_time = timer_ticks();
-  int elapsed_time;
   void* segments[100];
   int segSize[100];
   int i,loop;
@@ -62,6 +61,8 @@ int testpalloc_add10_remove5_add5_remove10(int seed)
     for(i = 0;i<10;i++)
       palloc_free_multiple(segments[i],segSize[i]);
   }
+  
+  int elapsed_time;
     
 
   //todo: check segmentation here
