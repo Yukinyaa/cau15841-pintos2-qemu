@@ -97,9 +97,8 @@ start_process (void *_params)
     thread_exit ();
   }
 
-  /* Frame allocate */
-  struct hash frametable = frame_get_frame();
-  printf("\nhash size: %d\n", hash_size(&frametable));
+  /* Frame print */
+  frame_printf();
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in

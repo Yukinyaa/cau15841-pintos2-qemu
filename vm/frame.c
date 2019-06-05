@@ -55,7 +55,7 @@ void frame_addframe(void * upage, void *address)
     new_frame->userpage = upage;
     new_frame->thread = thread_current();
     new_frame->address = address;
-    printf("\naddframe - userpage: %p\n", upage);
+    printf("\naddframe - userpage: %p address: %p", upage, address);
 
     hash_insert(&frametable, &new_frame->hash_elem);    // add a frame to frametable
     frame_unlock_frametable();
@@ -74,7 +74,6 @@ void frame_free(void * address)
 	struct hash_elem * found_frame;
 	struct frame frame_elem;
 	frame_elem.address = address;
-    printf("\nframe free! address: %p\n", address);
 
 	found_frame = hash_find(&frametable, &frame_elem.hash_elem);
 	if(found_frame != NULL)
@@ -83,9 +82,8 @@ void frame_free(void * address)
 		palloc_free_page(frame->address);   // Free physical memory
 		hash_delete(&frametable, &frame->hash_elem);    // Free the entry in the frametable
 		free(frame);
-        printf("\nframe free!\n");
+        printf("\nframe free! address: %p / hash size: %d", address, hash_size(&frametable));
 	}
-    else {printf("found_frame is null");}
 }
 
 // hash functions
